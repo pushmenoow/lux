@@ -1,13 +1,20 @@
-export interface Posts {
-    isSelected: boolean;
-    userId: number,
-    id: number,
-    title: string,
-    body: string,
-    isEdit: boolean
+export class Album {
+    public isSelected: boolean;
+    public userId: number;
+    public id: number;
+    public title: string;
+    public isEdit: boolean;
+
+    constructor (isEdit: boolean) {
+        this.isSelected = false;
+        this.userId = 0;
+        this.id = 0;
+        this.title = '';
+        this.isEdit = isEdit;
+    }
 }
 
-export const PostsColumns = [
+export const AlbumColumns = [
     {
         key: 'isSelected',
         type: 'isSelected',
@@ -27,11 +34,6 @@ export const PostsColumns = [
         key: 'title',
         type: 'text',
         label: 'Title'
-    },
-    {
-        key: 'body',
-        type: 'text',
-        label: 'Body'
     },
     {
         key: 'isEdit',

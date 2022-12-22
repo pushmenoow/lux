@@ -1,13 +1,22 @@
-export interface Todos {
-    isSelected: boolean;
-    userId: number,
-    id: number,
-    title: string,
-    completed: boolean,
-    isEdit: boolean
+export class Todo {
+    public isSelected: boolean;
+    public userId: number;
+    public id: number;
+    public title: string;
+    public completed: boolean;
+    public isEdit: boolean;
+
+    constructor(isEdit: boolean) {
+        this.isSelected = false;
+        this.userId = 0;
+        this.id = 0;
+        this.title = '';
+        this.completed = false;
+        this.isEdit = isEdit;
+    }
 }
 
-export const TodosColumns = [
+export const TodoColumns = [
     {
         key: 'isSelected',
         type: 'isSelected',

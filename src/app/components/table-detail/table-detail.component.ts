@@ -2,27 +2,21 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { Observable } from 'rxjs';
-
-// services' imports
-import { TableService } from '../../services/table.service';
-import { AlbumsService } from 'src/app/services/albums.service';
-import { CommentsService } from 'src/app/services/comments.service';
-import { PhotosService } from 'src/app/services/photos.service';
-import { PostsService } from 'src/app/services/posts.service';
-import { TodosService } from 'src/app/services/todos.service';
-import { UsersService } from 'src/app/services/users.service';
+import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 // models' imports
-import { Table } from '../../models/table';
-import { Albums, AlbumsColumns } from 'src/app/models/albums';
-import { Comments, CommentsColumns } from 'src/app/models/comments';
-import { Photos, PhotosColumns } from 'src/app/models/photos';
-import { Posts, PostsColumns } from 'src/app/models/posts';
-import { Todos, TodosColumns } from 'src/app/models/todos';
-import { Users, UsersColumns } from 'src/app/models/users';
+import { Table } from 'src/app/models/table';
+import { TableService } from 'src/app/services/table.service';
+import { TargetTable } from 'src/app/models/tables-list';
+import { Album, AlbumColumns } from 'src/app/models/album';
+import { Annotation, AnnotationColumns } from 'src/app/models/annotation';
+import { Photo, PhotoColumns } from 'src/app/models/photo';
+import { Post, PostColumns } from 'src/app/models/post';
+import { Todo, TodoColumns } from 'src/app/models/todo';
+import { User, UserColumns } from 'src/app/models/user';
 
 @Component({
   selector: 'app-table-detail',
@@ -31,37 +25,31 @@ import { Users, UsersColumns } from 'src/app/models/users';
 })
 
 export class TableDetailComponent implements OnInit {
-
   public dataArray: any;
   public columnsSchema: any;
   public displayedColumns: string[] = [];
 
-  public albumsArray = new MatTableDataSource<Albums>();
-  public commentsArray = new MatTableDataSource<Comments>();
-  public photosArray = new MatTableDataSource<Photos>();
-  public postsArray = new MatTableDataSource<Posts>();
-  public todosArray = new MatTableDataSource<Todos>();
-  public usersArray = new MatTableDataSource<Users>();
+  public albumsArray = new MatTableDataSource<Album>();
+  public annotationsArray = new MatTableDataSource<Annotation>();
+  public photosArray = new MatTableDataSource<Photo>();
+  public postsArray = new MatTableDataSource<Post>();
+  public todosArray = new MatTableDataSource<Todo>();
+  public usersArray = new MatTableDataSource<User>();
 
-  valid: any = {};
-
-  @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
+  public valid: any = {};
 
   public table: Table = {
     id: 0,
     name: ""
   };
 
+  private urlPart: string = '';
+
   constructor(
+    public dialog: MatDialog,
     private http: HttpClient,
     private route: ActivatedRoute,
     private tableService: TableService,
-    private albumsService: AlbumsService,
-    private commentsService: CommentsService,
-    private photosService: PhotosService,
-    private postsService: PostsService,
-    private todosService: TodosService,
-    private usersService: UsersService,
     private location: Location
   ) { }
 
@@ -72,7 +60,6 @@ export class TableDetailComponent implements OnInit {
   }
 
   public getTable(): Observable<any> {
-
     const id = Number(this.route.snapshot.paramMap.get('id'));
     console.log(id);
 
@@ -81,183 +68,138 @@ export class TableDetailComponent implements OnInit {
 
     switch (id) {
       case 1:
-        this.displayedColumns = AlbumsColumns.map((column) => column.key);
-        this.dataArray = this.postsArray;
-        this.columnsSchema = AlbumsColumns;
+        this.displayedColumns = AlbumColumns.map((column) => column.key);
+        this.dataArray = this.albumsArray;
+        this.columnsSchema = AlbumColumns;
+        this.urlPart = 'albums/';
         break;
       case 2:
-        this.displayedColumns = CommentsColumns.map((column) => column.key);
-        this.dataArray = this.commentsArray;
-        this.columnsSchema = CommentsColumns;
+        this.displayedColumns = AnnotationColumns.map((column) => column.key);
+        this.dataArray = this.annotationsArray;
+        this.columnsSchema = AnnotationColumns;
+        this.urlPart = 'comments/';
         break;
       case 3:
-        this.displayedColumns = PhotosColumns.map((column) => column.key);
-        this.dataArray = this.postsArray;
-        this.columnsSchema = PhotosColumns;
+        this.displayedColumns = PhotoColumns.map((column) => column.key);
+        this.dataArray = this.photosArray;
+        this.columnsSchema = PhotoColumns;
+        this.urlPart = 'photos/';
         break;
       case 4:
-        this.displayedColumns = PostsColumns.map((column) => column.key);
+        this.displayedColumns = PostColumns.map((column) => column.key);
         this.dataArray = this.postsArray;
-        this.columnsSchema = PostsColumns;
+        this.columnsSchema = PostColumns;
+        this.urlPart = 'posts/';
         break;
       case 5:
-        this.displayedColumns = TodosColumns.map((column) => column.key);
-        this.dataArray = this.postsArray;
-        this.columnsSchema = TodosColumns;
+        this.displayedColumns = TodoColumns.map((column) => column.key);
+        this.dataArray = this.todosArray;
+        this.columnsSchema = TodoColumns;
+        this.urlPart = 'todos/';
         break;
       case 6:
-        this.displayedColumns = UsersColumns.map((column) => column.key);
-        this.dataArray = this.postsArray;
-        this.columnsSchema = UsersColumns;
+        this.displayedColumns = UserColumns.map((column) => column.key);
+        this.dataArray = this.usersArray;
+        this.columnsSchema = UserColumns;
+        this.urlPart = 'users/';
         break;
     }
 
-    return this.http.get(this.tableService.getServiceUrl() + this.table.name);
+    return this.http.get(TableService.getServiceUrl() + this.table.name);
   }
 
-  public editRowSwitcher(tableId: number, row: any): void {
+  public addRow(tableId: number): void {
+    let isEdit: boolean = true;
+
     switch (tableId) {
       case 1:
-        // this.editRowAlbums(row);
+        this.albumsArray.data = [new Album(isEdit), ...this.albumsArray.data];
         break;
       case 2:
-        // this.editRowComments(row);
+        this.annotationsArray.data = [new Annotation(isEdit), ... this.annotationsArray.data];
         break;
       case 3:
-        // this.editRowPhotos(row);
+        this.photosArray.data = [new Photo(isEdit), ...this.photosArray.data];
         break;
       case 4:
-        this.editRowPosts(row);
+        this.postsArray.data = [new Post(isEdit), ...this.postsArray.data];
         break;
       case 5:
-        // this.editRowTodos(row);
+        this.todosArray.data = [new Todo(isEdit), ...this.todosArray.data];
         break;
       case 6:
-        // this.editRowUsers(row);
-        break;
-      default:
-        console.log('error: editRowSwitcher skipped');
+      // this.usersArray.data = [new User(isEdit), ...this.usersArray.data]; 
+      // break;
+      default: console.log('error: addRow skipped');
     }
   }
 
-  public addRowSwitcher(tableId: number): void {
-    switch (tableId) {
-      case 1:
-        // this.addRowAlbums();
-        break;
-      case 2:
-        // this.addRowComments();
-        break;
-      case 3:
-        // this.addRowPhotos();
-        break;
-      case 4:
-        this.addRowPosts();
-        break;
-      case 5:
-        // this.addRowTodos();
-        break;
-      case 6:
-        // this.addRowUsers();
-        break;
-      default:
-        console.log('error: addRowSwitcher skipped');
+  public removeSelectedRows() {
+    const rows = this.dataArray.data.filter((r: TargetTable) => r.isSelected);
+    this.dialog
+      .open(ConfirmDialogComponent)
+      .afterClosed()
+      .subscribe((confirm) => {
+        if (confirm) {
+          this.tableService.deleteRows(rows, this.urlPart).subscribe(() => {
+            this.dataArray.data = this.dataArray.data.filter(
+              (r: TargetTable) => !r.isSelected
+            );
+          });
+        }
+      });
+  }
+
+  public editSelectedRows() {
+    const rows = this.dataArray.data.filter((r: TargetTable) => r.isSelected);
+    this.dialog
+      .open(ConfirmDialogComponent)
+      .afterClosed()
+      .subscribe((confirm) => {
+        if (confirm) {
+          this.tableService.editRows(rows, this.urlPart).subscribe(() => {
+            this.dataArray.data = this.dataArray.data.filter(
+              (r: TargetTable) => !r.isSelected
+            );
+          });
+        }
+      });
+  }
+
+  public editRow(row: TargetTable): void {
+    if (row.id === 0) {
+      this.tableService.addRow(row, this.urlPart).subscribe((newRow: TargetTable) => {
+        row.id = newRow.id;
+        row.isEdit = false;
+      });
+    } else {
+      this.tableService.updateRow(row, this.urlPart).subscribe(() => (row.isEdit = false));
     }
   }
 
-  public removeRowSwitcher(tableId: number, rowId: any): void {
-    switch (tableId) {
-      case 1:
-        // this.addRowAlbums();
-        break;
-      case 2:
-        // this.addRowComments();
-        break;
-      case 3:
-        // this.addRowPhotos();
-        break;
-      case 4:
-        this.removeRowPosts(rowId);
-        break;
-      case 5:
-        // this.addRowTodos();
-        break;
-      case 6:
-        // this.addRowUsers();
-        break;
-      default:
-        console.log('error: addRowSwitcher skipped');
-    }
+  public removeRow(rowId: any): void {
+    this.tableService.deleteRow(rowId, this.urlPart).subscribe(() => {
+      this.dataArray.data = this.dataArray.data.filter(
+        (r: TargetTable) => r.id !== rowId
+      );
+    });
   }
 
-  
-
-  removeSelectedRows() {
-    // const users = this.dataArray.data.filter((p: TablesList.Posts) => p.isSelected);
-    // this.dialog
-    //   .open(ConfirmDialogComponent)
-    //   .afterClosed()
-    //   .subscribe((confirm) => {
-    //     if (confirm) {
-    //       this.tableService.deleteUsers(users).subscribe(() => {
-    //         this.dataArray.data = this.dataArray.data.filter(
-    //           (p: TablesList.Posts) => !p.isSelected
-    //         );
-    //       });
-    //     }
-    //   });
-  }
-
-  public inputHandler(e: any, id: number, key: string) {
+  public inputHandler(e: any, id: number, key: string): void {
     if (!this.valid[id]) {
       this.valid[id] = {};
     }
     this.valid[id][key] = e.target.validity.valid;
   }
 
-  public disableSubmit(id: number) {
+  public disableSubmit(id: number): boolean {
     if (this.valid[id]) {
       return Object.values(this.valid[id]).some((item) => item === false);
     }
     return false;
   }
 
-  
-
   public goBack(): void {
     this.location.back();
   }
-
-  public addRowPosts(): void {
-    const newRow: Posts = {
-      userId: 0,
-      id: 0,
-      title: '',
-      body: '',
-      isSelected: false,
-      isEdit: true
-    }
-
-    this.postsArray.data = [newRow, ...this.postsArray.data];
-  }
-
-  public editRowPosts(row: Posts) {
-    if (row.id === 0) {
-      this.postsService.addPost(row).subscribe((newPost: Posts) => {
-        row.id = newPost.id;
-        row.isEdit = false;
-      });
-    } else {
-      this.postsService.updatePost(row).subscribe(() => (row.isEdit = false));
-    }
-  }
-
-  public removeRowPosts(rowId: any) {
-    this.postsService.deletePost(rowId).subscribe(() => {
-      this.dataArray.data = this.dataArray.data.filter(
-        (p: Posts) => p.id !== rowId
-      );
-    });
-  }
-
 }

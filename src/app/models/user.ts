@@ -1,4 +1,4 @@
-export interface Users {
+export interface User {
     isSelected: boolean;
     id: number,
     name: string,
@@ -30,7 +30,7 @@ export interface Geo {
     lng: string
 }
 
-export const UsersColumns = [
+export const UserColumns = [
     {
         key: 'isSelected',
         type: 'isSelected',

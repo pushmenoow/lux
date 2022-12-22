@@ -1,14 +1,24 @@
-export interface Photos {
-    isSelected: boolean;
-    albumId: number,
-    id: number,
-    title: string,
-    url: string,
-    thumbnailUrl: string,
-    isEdit: boolean
+export class Photo {
+    public isSelected: boolean;
+    public albumId: number;
+    public id: number;
+    public title: string;
+    public url: string;
+    public thumbnailUrl: string;
+    public isEdit: boolean;
+
+    constructor(isEdit: boolean) {
+            this.isSelected = false;
+            this.albumId = 0;
+            this.id = 0;
+            this. title = '';
+            this.url = '';
+            this.thumbnailUrl = '';
+            this.isEdit = isEdit;
+    }
 }
 
-export const PhotosColumns = [
+export const PhotoColumns = [
     {
         key: 'isSelected',
         type: 'isSelected',
