@@ -1,0 +1,8 @@
+<h2>Tables list</h2>
+<ul class="tables">
+  <li *ngFor="let table of tables">
+    <a routerLink="/detail/{{table.id}}">
+      <span class="id">{{table.id}}</span> {{table.name}}
+    </a>
+  </li>
+</ul>

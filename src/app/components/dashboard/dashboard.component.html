@@ -1,0 +1,7 @@
+<h2>Frequently used tables</h2>
+<div class="tables-menu">
+    <a *ngFor="let table of tables"
+        routerLink="/detail/{{table.id}}">
+        {{table.name}}
+    </a>
+</div>
